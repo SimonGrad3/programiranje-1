@@ -43,22 +43,51 @@ let print_grid string_of_cell grid =
 
 (* Funkcije za dostopanje do elementov mreže *)
 
-let get_row (grid : 'a grid) (row_ind : int) = failwith "TODO"
+let get_row (grid : 'a grid) (row_ind : int) = grid.(row_ind) 
 
-let rows grid = failwith "TODO"
+let rows grid = List.init 9 (get_row grid)
 
 let get_column (grid : 'a grid) (col_ind : int) =
   Array.init 9 (fun row_ind -> grid.(row_ind).(col_ind))
 
 let columns grid = List.init 9 (get_column grid)
 
-let get_box (grid : 'a grid) (box_ind : int) = failwith "TODO"
+let get_box (grid : 'a grid) (box_ind : int) = 
+  
+  let rec zajami (grid : 'a grid) (a : int) (b : int) (c : int) (d : int) =
+    let rec prevrti_po_stolpcih grid (acc : int list) a b c d =
+      match c with
+      | c when c <= d -> prevrti_po_stolpcih grid ( grid.(a).(c) :: acc) a b (c + 1) d
+      | c -> acc
+    in 
+      let rec prevrti_po_vrsticah grid (acc : int list) a b c d =
+        match a with
+        | a when a <= b -> prevrti_po_vrsticah grid (prevrti_po_stolpcih grid [] a b c d @ acc) (a+1) b c d 
+        | a -> acc
+      in 
+        Array.of_list (List.rev (prevrti_po_vrsticah grid [] a b c d))
+  in
+    
+  let funkcija [a; b; c; d] = zajami grid a b c d in
+  
+    match box_ind with
+    | 0 -> funkcija [0;2;0;2]
+    | 1 -> funkcija [0;2;3;5]
+    | 2 -> funkcija [0;2;6;8]
+    | 3 -> funkcija [3;5;0;2]
+    | 4 -> funkcija [3;5;3;5]
+    | 5 -> funkcija [3;5;6;8]
+    | 6 -> funkcija [6;8;0;2]
+    | 7 -> funkcija [6;8;3;5]
+    | b -> funkcija [6;8;6;8]
 
-let boxes grid = failwith "TODO"
+
+let boxes grid = List.init 9 (get_box grid)
 
 (* Funkcije za ustvarjanje novih mrež *)
 
-let map_grid (f : 'a -> 'b) (grid : 'a grid) : 'b grid = failwith "TODO"
+let map_grid (f : 'a -> 'b) (grid : 'a grid) : 'b grid = 
+  Array.init 9 (fun vrstica -> Array.map f (get_row grid vrstica))  
 
 let copy_grid (grid : 'a grid) : 'a grid = map_grid (fun x -> x) grid
 
@@ -97,7 +126,14 @@ let grid_of_string cell_of_char str =
 
 type problem = { initial_grid : int option grid }
 
-let print_problem problem : unit = failwith "TODO"
+let print_problem problem : unit =
+  let string_of_option x =
+    match x with
+    | None -> " "
+    | Some i -> string_of_int i
+  in
+  print_grid string_of_option problem
+
 
 let problem_of_string str =
   let cell_of_char = function
@@ -111,6 +147,6 @@ let problem_of_string str =
 
 type solution = int grid
 
-let print_solution solution = failwith "TODO"
+let print_solution solution = print_grid string_of_int 
 
 let is_valid_solution problem solution = failwith "TODO"
