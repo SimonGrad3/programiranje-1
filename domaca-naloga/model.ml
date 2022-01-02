@@ -68,18 +68,18 @@ let get_box (grid : 'a grid) (box_ind : int) =
         Array.of_list (List.rev (prevrti_po_vrsticah grid [] a b c d))
   in
     
-  let funkcija [a; b; c; d] = zajami grid a b c d in
+  let funkcija (a, b, c, d) = zajami grid a b c d in
   
     match box_ind with
-    | 0 -> funkcija [0;2;0;2]
-    | 1 -> funkcija [0;2;3;5]
-    | 2 -> funkcija [0;2;6;8]
-    | 3 -> funkcija [3;5;0;2]
-    | 4 -> funkcija [3;5;3;5]
-    | 5 -> funkcija [3;5;6;8]
-    | 6 -> funkcija [6;8;0;2]
-    | 7 -> funkcija [6;8;3;5]
-    | b -> funkcija [6;8;6;8]
+    | 0 -> funkcija (0,2,0,2)
+    | 1 -> funkcija (0,2,3,5)
+    | 2 -> funkcija (0,2,6,8)
+    | 3 -> funkcija (3,5,0,2)
+    | 4 -> funkcija (3,5,3,5)
+    | 5 -> funkcija (3,5,6,8)
+    | 6 -> funkcija (6,8,0,2)
+    | 7 -> funkcija (6,8,3,5)
+    | _ -> funkcija (6,8,6,8)
 
 
 let boxes grid = List.init 9 (get_box grid)
@@ -147,6 +147,32 @@ let problem_of_string str =
 
 type solution = int grid
 
-let print_solution solution = print_grid string_of_int 
+let print_solution solution = print_grid string_of_int solution
 
-let is_valid_solution problem solution = failwith "TODO"
+let preveri_ujemanje problem solution i j =
+  match problem.(i).(j) with
+  | None -> true
+  | Some dig when (dig = solution.(i).(j))  -> true
+  | _ -> false
+
+let is_valid_solution problem solution = 
+  let seznam = (rows solution) @ (columns solution) @ (boxes solution) in
+    let rec preveri_stevila seznam = 
+      match seznam with
+      | [] -> true
+      | a :: b when (List.sort (Int.compare) (Array.to_list a)) = [1;2;3;4;5;6;7;8;9] -> 
+        preveri_stevila b 
+      | a :: b -> false
+    in
+      let rec preveri_ujemanje_aux problem solution velikost i j  =
+        match (i, j) with
+        | (0, 0) -> preveri_ujemanje problem solution i j
+        | (0, b) -> 
+          (preveri_ujemanje problem solution i j) && (preveri_ujemanje_aux problem solution velikost velikost (j - 1))
+        | (a, _) -> (preveri_ujemanje problem solution i j) && (preveri_ujemanje_aux problem solution velikost (i-1) j)
+      in ((preveri_ujemanje_aux problem solution 8 8 8) && (preveri_stevila seznam))
+
+
+
+
+
