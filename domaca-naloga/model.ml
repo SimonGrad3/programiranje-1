@@ -55,12 +55,12 @@ let columns grid = List.init 9 (get_column grid)
 let get_box (grid : 'a grid) (box_ind : int) = 
   
   let rec zajami (grid : 'a grid) (a : int) (b : int) (c : int) (d : int) =
-    let rec prevrti_po_stolpcih grid (acc : int list) a b c d =
+    let rec prevrti_po_stolpcih grid (acc : 'a list) a b c d =
       match c with
       | c when c <= d -> prevrti_po_stolpcih grid ( grid.(a).(c) :: acc) a b (c + 1) d
       | c -> acc
     in 
-      let rec prevrti_po_vrsticah grid (acc : int list) a b c d =
+      let rec prevrti_po_vrsticah grid (acc : 'a list) a b c d =
         match a with
         | a when a <= b -> prevrti_po_vrsticah grid (prevrti_po_stolpcih grid [] a b c d @ acc) (a+1) b c d 
         | a -> acc
