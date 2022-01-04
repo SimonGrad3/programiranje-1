@@ -150,12 +150,12 @@ type solution = int grid
 let print_solution solution = print_grid string_of_int solution
 
 let preveri_ujemanje problem solution i j =
-  match problem.(i).(j) with
+  match problem.initial_grid.(i).(j) with
   | None -> true
   | Some dig when (dig = solution.(i).(j))  -> true
   | _ -> false
 
-let is_valid_solution problem solution = 
+let is_valid_solution (problem : problem) (solution : solution) = 
   let seznam = (rows solution) @ (columns solution) @ (boxes solution) in
     let rec preveri_stevila seznam = 
       match seznam with
