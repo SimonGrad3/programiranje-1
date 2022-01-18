@@ -42,12 +42,11 @@ let validate_state (state : state) : response =
 let poisci_prazno_celico grid = 
   let rec aux grid i j =
     match (i, j) with
-    (* Tukej bi blo treba narest nekej da vrne v obliki, da se ve da je sudoku do konca izpolnjen *)
     |(8, 9) -> failwith "Očitno sudoku cel izpolnjen"
     |(i, 9) -> aux grid (i + 1) 0
     |(i, j) ->
       match grid.(i).(j)  with
-    | None -> (i , j)
+      | None -> (i , j)
       | Some dig -> aux grid i (j + 1)
   in 
   aux grid 0 0
@@ -67,6 +66,7 @@ let ugotovi_box (i,j) =
   | _ -> failwith "Ta index ne obstaja"
 
 let spremeni_v_int seznam =
+  (* Funkcija ki 'a option seznam spremeni v 'a seznam *)
   let rec aux seznam acc =
     match seznam with
     | [] -> acc
@@ -78,6 +78,7 @@ let spremeni_v_int seznam =
   
 (* Pozor tukaj je sez od 1 do 9 razen če smo že kaj zbrisali *)
 let preglej (grid : 'a option Model.grid) (i, j) sez : int list = 
+  (* Funkcija, ki preveri katere številke so možne v celici (i,j) *)
   let seznam_option = (Array.to_list (Model.get_row grid i)) @ 
   (Array.to_list (Model.get_column grid j)) @ 
   Array.to_list (Model.get_box grid (ugotovi_box (i,j))) in 
@@ -85,21 +86,22 @@ let preglej (grid : 'a option Model.grid) (i, j) sez : int list =
   let rec preglej_sezname seznam sez acc =
     match sez with
     | [] -> acc 
-    | a :: b when (List.exists (fun x -> a = x) seznam) -> preglej_sezname seznam b (a :: acc)
-    | a :: b -> preglej_sezname seznam b acc
+    | a :: b when (List.exists (fun x -> a = x) seznam) -> preglej_sezname seznam b acc
+    | a :: b -> preglej_sezname seznam b (a :: acc)
   in
     preglej_sezname seznam sez []
 
 
 let rec spremeni_available_v_state state (i , j) list  =
-let rec funk seznam = 
-  match seznam with
-  | [] -> failwith "available_list je prazen."
-  | a :: _ when a.loc = (i,j) -> a
-| _ :: b ->  funk b
-  in
-  (funk state.available).possible <- list;
-state.available
+  (* V stateu spremeni pri določenem (i,j) list možnih števil *)
+  let rec funk seznam = 
+    match seznam with
+    | [] -> failwith "available_list je prazen."
+    | a :: _ when a.loc = (i,j) -> a
+    | _ :: b ->  funk b
+    in
+    (funk state.available).possible <- list;
+  state.available
 
 let dodaj_cifro grid (i,j) cifra =
   let novi_grid = Model.copy_grid grid in
@@ -112,15 +114,16 @@ let preveri_available_list state (i,j) list =
   | a :: b -> Some (
     {problem = state.problem ;
     current_grid = dodaj_cifro (state.current_grid) (i,j) a ;
-    available = spremeni_available_v_state state (i,j) b}
+  available = spremeni_available_v_state state (i,j) b}
   , 
   {problem = state.problem;
     current_grid = state.current_grid;
     available = spremeni_available_v_state state (i,j) b
     })  
-    
+
 
 let rec poisci_available available_list (i , j) =
+  (* V available listu poišče tisti available z loc = (i,j) in vrne njemu pripradjoč list possiblov. *)
   match available_list with
   | [] -> failwith "available_list je prazen."
   | a :: _ when a.loc = (i,j) -> a.possible
@@ -128,6 +131,7 @@ let rec poisci_available available_list (i , j) =
 
 
 let posodobi_available state =
+  (* Posodobi celoten available list *)
   let rec aux acc available =
     match available with 
     | [] -> {state with available = acc}
@@ -139,7 +143,7 @@ let posodobi_available state =
 (* ------------------------ KONEC POMOŽNIH FUNKCIJ-------------------- *)
 
 let zacetni_pregled state =
-  (* Ta funkcija dodela available, list, v stateih, da je poln.*)
+  (* Ta funkcija dodela available, list, v state, da je poln.*)
   let y = Array.length (state.current_grid)  in
   let x = Array.length ( state.current_grid.(0) ) in
   let rec prevrti state (i, j) =  
